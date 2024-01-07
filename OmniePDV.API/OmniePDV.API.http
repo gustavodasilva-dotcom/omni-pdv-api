@@ -1,0 +1,6 @@
+@OmniePDV.API_HostAddress = http://localhost:5048
+
+GET {{OmniePDV.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
