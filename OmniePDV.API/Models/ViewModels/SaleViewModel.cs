@@ -13,7 +13,7 @@ public sealed class SaleViewModel
     public double Subtotal { get; set; }
 
     [JsonPropertyName("discount")]
-    public double Discount { get; set; }
+    public DiscountViewModel? Discount { get; set; }
 
     [JsonPropertyName("total")]
     public double Total { get; set; }
@@ -22,7 +22,7 @@ public sealed class SaleViewModel
     public List<SaleProductViewModel> Products { get; set; }
 
     [JsonPropertyName("status")]
-    public SaleStatus Status { get; set; }
+    public SaleStatusEnum Status { get; set; }
 
     [JsonPropertyName("sale_date")]
     public DateTime SaleDate { get; set; }
@@ -34,7 +34,7 @@ public static class SaleViewModelExtensions
     {
         UID = model.UID,
         Subtotal = model.Subtotal,
-        Discount = model.Discount,
+        Discount = model.Discount?.ToViewModel(),
         Total = model.Total,
         Products = model.Products.ToViewModel(),
         Status = model.Status,

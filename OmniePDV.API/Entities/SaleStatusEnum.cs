@@ -1,6 +1,6 @@
 ﻿namespace OmniePDV.API.Entities;
 
-public enum SaleStatus : int
+public enum SaleStatusEnum : int
 {
     Open = 1,
     Closed = 2,

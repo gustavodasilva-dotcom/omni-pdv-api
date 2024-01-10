@@ -19,10 +19,10 @@ public class SalesController(IMongoContext context) : ControllerBase
 		try
 		{
 			Data.Entities.Sale sale = await _context.Sales
-                .Find(s => s.Status == SaleStatus.Open)
+                .Find(s => s.Status == SaleStatusEnum.Open)
                 .FirstOrDefaultAsync();
 			if (sale == null)
-				return NotFound("There's no open sale");
+				return NoContent();
 
 			return Ok(sale.ToViewModel());
 		}
@@ -38,13 +38,12 @@ public class SalesController(IMongoContext context) : ControllerBase
 		try
 		{
             Data.Entities.Sale sale = await _context.Sales
-                .Find(s => s.Status == SaleStatus.Open)
+                .Find(s => s.Status == SaleStatusEnum.Open)
                 .FirstOrDefaultAsync();
 			if (sale == null)
 			{
                 sale = new Data.Entities.Sale(
                     UID: Guid.NewGuid(),
-                    Discount: 0,
                     Subtotal: 0,
                     Total: 0,
                     Products: []
@@ -60,15 +59,63 @@ public class SalesController(IMongoContext context) : ControllerBase
 
             Data.Entities.SaleProduct saleProduct = new(
                 UID: Guid.NewGuid(),
+                Order: sale.Products.Count + 1,
                 Quantity: body.Quantity,
                 Product: product
             );
             sale.AddProduct(saleProduct);
-            sale.UpdateSubtotal(saleProduct.Product.RetailPrice * saleProduct.Quantity);
-            sale.UpdateTotal();
             await _context.Sales.ReplaceOneAsync(s => s.UID == sale.UID, sale);
 
 			return Ok(sale.ToViewModel());
+        }
+        catch (Exception e)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+        }
+    }
+
+    [HttpDelete("delete-product/{order:int}")]
+    public async Task<IActionResult> DeleteProductFromSale([FromRoute] int order)
+    {
+        try
+        {
+            Data.Entities.Sale sale = await _context.Sales
+                .Find(s => s.Status == SaleStatusEnum.Open)
+                .FirstOrDefaultAsync();
+			if (sale == null)
+                return BadRequest("There's no sale opened");
+
+            Data.Entities.SaleProduct? productToDelete = sale.Products.FirstOrDefault(p => p.Order == order);
+            if (productToDelete == null)
+                return BadRequest(string.Format("There's no product with the order {0}", order));
+
+            productToDelete.DeleteProduct();
+            sale.UpdateSubtotal();
+            await _context.Sales.ReplaceOneAsync(s => s.UID == sale.UID, sale);
+
+            return Ok(sale.ToViewModel());
+        }
+        catch (Exception e)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+        }
+    }
+
+    [HttpPatch("add-discount")]
+    public async Task<IActionResult> AddDiscountToSale([FromBody] AddDiscountToSaleInputModel body)
+    {
+        try
+        {
+            Data.Entities.Sale sale = await _context.Sales
+                .Find(s => s.Status == SaleStatusEnum.Open)
+                .FirstOrDefaultAsync();
+			if (sale == null)
+                return BadRequest("There's no sale opened");
+
+            sale.AddDiscount(body.Value, body.Type);
+            await _context.Sales.ReplaceOneAsync(s => s.UID == sale.UID, sale);
+
+            return Ok(sale.ToViewModel());
         }
         catch (Exception e)
         {
