@@ -9,6 +9,9 @@ public sealed class SaleViewModel
     [JsonPropertyName("uid")]
     public Guid UID { get; set; }
 
+    [JsonPropertyName("number")]
+    public long Number { get; set; }
+
     [JsonPropertyName("subtotal")]
     public double Subtotal { get; set; }
 
@@ -33,6 +36,7 @@ public static class SaleViewModelExtensions
     public static SaleViewModel ToViewModel(this Sale model) => new()
     {
         UID = model.UID,
+        Number = model.Number,
         Subtotal = model.Subtotal,
         Discount = model.Discount?.ToViewModel(),
         Total = model.Total,

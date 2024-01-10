@@ -42,8 +42,10 @@ public class SalesController(IMongoContext context) : ControllerBase
                 .FirstOrDefaultAsync();
 			if (sale == null)
 			{
+                long totalSales = _context.Sales.CountDocuments(s => true);
                 sale = new Data.Entities.Sale(
                     UID: Guid.NewGuid(),
+                    Number: totalSales + 1,
                     Subtotal: 0,
                     Total: 0,
                     Products: []

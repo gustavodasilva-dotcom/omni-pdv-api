@@ -4,10 +4,12 @@ namespace OmniePDV.API.Data.Entities;
 
 public sealed class Sale(
     Guid UID,
+    long Number,
     double Subtotal,
     double Total,
     List<SaleProduct> Products) : Entity(UID)
 {
+    public long Number { get; private set; } = Number;
     public double Subtotal { get; private set; } = Subtotal;
     public Discount? Discount { get; private set; }
     public double Total { get; private set; } = Total;
