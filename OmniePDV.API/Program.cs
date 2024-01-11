@@ -1,4 +1,5 @@
 using OmniePDV.API.Data;
+using OmniePDV.API.Middlewares;
 using OmniePDV.API.Options;
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -16,6 +17,10 @@ builder.Services.Configure<MongoDBOptions>(
     builder.Configuration.GetSection(MongoDBOptions.Position));
 
 builder.Services.AddSingleton<IMongoContext, MongoContext>();
+
+builder.Services.AddLogging();
+
+builder.Services.AddTransient<GlobalExceptionHandlingMiddleware>();
 
 builder.Services.AddCors(options =>
 {
@@ -40,6 +45,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors(MyAllowSpecificOrigins);
+
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 app.UseAuthorization();
 

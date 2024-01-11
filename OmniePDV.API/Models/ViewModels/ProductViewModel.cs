@@ -5,8 +5,8 @@ namespace OmniePDV.API.Models.ViewModels;
 
 public sealed class ProductViewModel
 {
-    [JsonPropertyName("uid")]
-    public Guid UID { get; set; }
+    [JsonPropertyName("id")]
+    public Guid ID { get; set; }
 
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
@@ -34,7 +34,7 @@ public static class ProductViewModelExtensions
 {
     public static ProductViewModel ToViewModel(this Product model) => new()
     {
-        UID = model.UID,
+        ID = model.UID,
         Name = model.Name,
         Description = model.Description,
         WholesalePrice = model.WholesalePrice,
