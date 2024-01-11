@@ -7,13 +7,13 @@ using OmniePDV.API.Models.ViewModels;
 
 namespace OmniePDV.API.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/point-of-sales")]
 [ApiController]
-public class SalesController(IMongoContext context) : ControllerBase
+public class PointOfSalesController(IMongoContext context) : ControllerBase
 {
     private readonly IMongoContext _context = context;
 
-    [HttpGet("get-open-sale")]
+    [HttpGet("get-opened-sale")]
     public async Task<IActionResult> GetOpenSale()
     {
 		try
@@ -32,7 +32,36 @@ public class SalesController(IMongoContext context) : ControllerBase
 		}
     }
 
-	[HttpPost("add-product")]
+    [HttpPut("change-opened-sale-status")]
+    public async Task<IActionResult> CloseOpenedSale([FromBody] ChangeOpenedSaleStatusInputModel body)
+    {
+        try
+        {
+            Data.Entities.Sale sale = await _context.Sales
+                .Find(s => s.Status == SaleStatusEnum.Open)
+                .FirstOrDefaultAsync();
+            if (sale == null)
+                return BadRequest("There's no opened sale");
+
+            if (body.Status == SaleStatusEnum.Closed)
+                sale.CloseSale();
+            if (body.Status == SaleStatusEnum.Cancelled)
+                sale.CancelSale();
+
+            await _context.Sales.ReplaceOneAsync(s => s.UID == sale.UID, sale);
+
+            if (sale.Status == SaleStatusEnum.Open)
+                return Ok(sale.ToViewModel());
+            else
+                return NoContent();
+        }
+        catch (Exception e)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+        }
+    }
+
+    [HttpPost("add-product")]
 	public async Task<IActionResult> AddProductToSale([FromBody] AddProductToSaleInputModel body)
 	{
 		try
@@ -85,7 +114,7 @@ public class SalesController(IMongoContext context) : ControllerBase
                 .Find(s => s.Status == SaleStatusEnum.Open)
                 .FirstOrDefaultAsync();
 			if (sale == null)
-                return BadRequest("There's no sale opened");
+                return BadRequest("There's no opened sale");
 
             Data.Entities.SaleProduct? productToDelete = sale.Products.FirstOrDefault(p => p.Order == order);
             if (productToDelete == null)
@@ -112,7 +141,7 @@ public class SalesController(IMongoContext context) : ControllerBase
                 .Find(s => s.Status == SaleStatusEnum.Open)
                 .FirstOrDefaultAsync();
 			if (sale == null)
-                return BadRequest("There's no sale opened");
+                return BadRequest("There's no opened sale");
 
             sale.AddDiscount(body.Value, body.Type);
             await _context.Sales.ReplaceOneAsync(s => s.UID == sale.UID, sale);

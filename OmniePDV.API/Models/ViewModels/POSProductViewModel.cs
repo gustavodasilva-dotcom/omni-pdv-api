@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace OmniePDV.API.Models.ViewModels;
 
-public sealed class SaleProductViewModel
+public sealed class POSProductViewModel
 {
     [JsonPropertyName("uid")]
     public Guid UID { get; set; }
@@ -23,7 +23,7 @@ public sealed class SaleProductViewModel
 
 public static class SaleProductViewModelExtensions
 {
-    public static SaleProductViewModel ToViewModel(this SaleProduct model) => new()
+    public static POSProductViewModel ToViewModel(this SaleProduct model) => new()
     {
         UID = model.UID,
         Order = model.Order,
@@ -32,6 +32,6 @@ public static class SaleProductViewModelExtensions
         Deleted = model.Deleted
     };
 
-    public static List<SaleProductViewModel> ToViewModel(this List<SaleProduct> model) =>
+    public static List<POSProductViewModel> ToViewModel(this List<SaleProduct> model) =>
         model.Select(m => m.ToViewModel()).ToList();
 }
