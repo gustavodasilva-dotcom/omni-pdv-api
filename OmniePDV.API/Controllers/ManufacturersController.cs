@@ -39,9 +39,8 @@ public class ManufacturersController(IMongoContext context) : ControllerBase
             throw new ConflictException(string.Format("There's already a manufacturer with the CRN {0}", body.CRN));
 
         manufacturer = new Manufacturer(
-            UID: Guid.NewGuid(),
-            Name: body.Name.Trim(),
-            CRN: body.CRN.Trim(),
+            Name: body.Name,
+            CRN: body.CRN,
             Active: body.Active
         );
         await _context.Manufacturers.InsertOneAsync(manufacturer);
@@ -58,8 +57,8 @@ public class ManufacturersController(IMongoContext context) : ControllerBase
             .FirstOrDefaultAsync() ??
             throw new NotFoundException(string.Format("No manufacturer was found with the id {0}", id));
 
-        manufacturer.SetName(body.Name.Trim());
-        manufacturer.SetCRN(body.CRN.Trim());
+        manufacturer.SetName(body.Name);
+        manufacturer.SetCRN(body.CRN);
         manufacturer.SetActive(body.Active);
 
         await _context.Manufacturers.ReplaceOneAsync(m => m.UID.Equals(id), manufacturer);
@@ -75,7 +74,7 @@ public class ManufacturersController(IMongoContext context) : ControllerBase
             throw new BadRequestException(string.Format("Invalid id {0}", id));
         if (!await _context.Manufacturers.Find(m => m.UID == id).AnyAsync())
             throw new BadRequestException(string.Format("Manufacturer not found with the id {0}", id));
-        if (await _context.Products.Find(m => m.Manufacturer.UID == id).AnyAsync())
+        if (await _context.Products.Find(m => m.Manufacturer.UID.Equals(id)).AnyAsync())
             throw new BadRequestException("This manufacturer cannot be deleted, because it has products");
 
         await _context.Manufacturers.DeleteOneAsync(m => m.UID == id);

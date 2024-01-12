@@ -1,6 +1,8 @@
 using OmniePDV.API.Data;
+using OmniePDV.API.Data.Seeders;
 using OmniePDV.API.Middlewares;
-using OmniePDV.API.Options;
+using OmniePDV.API.Options.Data;
+using OmniePDV.API.Options.Global;
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -13,8 +15,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.Configure<MongoDBOptions>(
-    builder.Configuration.GetSection(MongoDBOptions.Position));
+builder.Services
+    .Configure<MongoDBOptions>(
+        builder.Configuration.GetSection(MongoDBOptions.Position))
+    .Configure<GlobalOptions>(
+        builder.Configuration.GetSection(GlobalOptions.Position));
 
 builder.Services.AddSingleton<IMongoContext, MongoContext>();
 
@@ -32,6 +37,8 @@ builder.Services.AddCors(options =>
                                 .AllowAnyMethod();
                       });
 });
+
+SeedRunner.ExecuteAsync(builder.Configuration).Wait();
 
 var app = builder.Build();
 

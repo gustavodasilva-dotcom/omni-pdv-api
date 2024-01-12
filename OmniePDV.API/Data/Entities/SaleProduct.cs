@@ -1,6 +1,10 @@
 ﻿namespace OmniePDV.API.Data.Entities;
 
-public sealed class SaleProduct(Guid UID, int Order, double Quantity, Product Product) : Entity(UID)
+public sealed class SaleProduct(
+    Guid UID,
+    int Order,
+    double Quantity,
+    Product Product) : Entity(UID)
 {
     public int Order { get; private set; } = Order;
     public double Quantity { get; private set; } = Quantity;

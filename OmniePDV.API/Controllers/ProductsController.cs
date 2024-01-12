@@ -57,12 +57,11 @@ public class ProductsController(IMongoContext context) : ControllerBase
                 body.Barcode.Trim()));
 
         product = new(
-            UID: Guid.NewGuid(),
-            Name: body.Name.Trim(),
-            Description: body.Description.Trim(),
+            Name: body.Name,
+            Description: body.Description,
             WholesalePrice: body.WholesalePrice,
             RetailPrice: body.RetailPrice,
-            Barcode: body.Barcode.Trim(),
+            Barcode: body.Barcode,
             Manufacturer: manufacturer,
             Active: body.Active
         );
@@ -85,11 +84,11 @@ public class ProductsController(IMongoContext context) : ControllerBase
             .FirstOrDefaultAsync() ??
             throw new BadRequestException("Manufacturer not found");
 
-        product.SetName(body.Name.Trim());
-        product.SetDescription(body.Description.Trim());
+        product.SetName(body.Name);
+        product.SetDescription(body.Description);
         product.SetWholesalePrice(body.WholesalePrice);
         product.SetRetailPrice(body.RetailPrice);
-        product.SetBarcode(body.Barcode.Trim());
+        product.SetBarcode(body.Barcode);
         product.SetManufacturer(manufacturer);
         product.SetActive(body.Active);
 

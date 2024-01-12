@@ -21,6 +21,9 @@ public sealed class POSViewModel
     [JsonPropertyName("total")]
     public double Total { get; set; }
 
+    [JsonPropertyName("client")]
+    public ClientViewModel Client { get; set; }
+
     [JsonPropertyName("products")]
     public List<POSProductViewModel> Products { get; set; }
 
@@ -40,6 +43,7 @@ public static class SaleViewModelExtensions
         Subtotal = model.Subtotal,
         Discount = model.Discount?.ToViewModel(),
         Total = model.Total,
+        Client = model.Client.ToViewModel(),
         Products = model.Products.ToViewModel(),
         Status = model.Status,
         SaleDate = model.SaleDate

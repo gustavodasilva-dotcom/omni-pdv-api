@@ -3,16 +3,17 @@
 namespace OmniePDV.API.Data.Entities;
 
 public sealed class Sale(
-    Guid UID,
     long Number,
     double Subtotal,
     double Total,
-    List<SaleProduct> Products) : Entity(UID)
+    Client Client,
+    List<SaleProduct> Products) : Entity(Guid.NewGuid())
 {
     public long Number { get; private set; } = Number;
     public double Subtotal { get; private set; } = Subtotal;
     public Discount? Discount { get; private set; }
     public double Total { get; private set; } = Total;
+    public Client Client { get; private set; } = Client;
     public List<SaleProduct> Products { get; private set; } = Products;
     public SaleStatusEnum Status { get; private set; } = SaleStatusEnum.Open;
     public DateTime SaleDate { get; private set; } = DateTime.Now;
@@ -26,7 +27,9 @@ public sealed class Sale(
             .Sum(p => p.Product.RetailPrice * p.Quantity);
         UpdateTotal();
     }
-    
+
+    public void SetClient(Client client) => Client = client;
+
     public void AddProduct(SaleProduct product) 
     {
         Products.Add(product);

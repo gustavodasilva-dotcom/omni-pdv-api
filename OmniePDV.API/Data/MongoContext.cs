@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using OmniePDV.API.Data.Entities;
-using OmniePDV.API.Options;
+using OmniePDV.API.Options.Data;
 
 namespace OmniePDV.API.Data;
 
@@ -10,6 +10,7 @@ public interface IMongoContext
     IMongoCollection<Product> Products { get; }
     IMongoCollection<Manufacturer> Manufacturers { get; }
     IMongoCollection<Sale> Sales { get; }
+    IMongoCollection<Client> Clients { get; }
 }
 
 public class MongoContext : IMongoContext
@@ -46,6 +47,14 @@ public class MongoContext : IMongoContext
         get
         {
             return _database.GetCollection<Sale>(nameof(Sales));
+        }
+    }
+
+    public IMongoCollection<Client> Clients
+    {
+        get
+        {
+            return _database.GetCollection<Client>(nameof(Clients));
         }
     }
 }
