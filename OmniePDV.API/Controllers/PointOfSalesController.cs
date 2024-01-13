@@ -26,35 +26,13 @@ public class PointOfSalesController(
     public async Task<IActionResult> GetOpenSale()
     {
         Data.Entities.Sale sale = await _context.Sales
-                .Find(s => s.Status == SaleStatusEnum.Open)
-                .FirstOrDefaultAsync();
+            .Find(s => s.Status == SaleStatusEnum.Open)
+            .FirstOrDefaultAsync();
         if (sale == null)
             return NoContent();
 
         return Ok(JsonResultViewModel<POSViewModel>
             .New(HttpStatusCode.OK, sale.ToViewModel()));
-    }
-
-    [HttpPut("change-opened-sale-status")]
-    public async Task<IActionResult> CloseOpenedSale([FromBody] ChangeOpenedSaleStatusInputModel body)
-    {
-        Data.Entities.Sale sale = await _context.Sales
-            .Find(s => s.Status == SaleStatusEnum.Open)
-            .FirstOrDefaultAsync() ??
-            throw new BadRequestException("There's no opened sale");
-
-        if (body.Status == SaleStatusEnum.Closed)
-            sale.CloseSale();
-        if (body.Status == SaleStatusEnum.Cancelled)
-            sale.CancelSale();
-
-        await _context.Sales.ReplaceOneAsync(s => s.UID == sale.UID, sale);
-
-        if (sale.Status == SaleStatusEnum.Open)
-            return Ok(JsonResultViewModel<POSViewModel>
-                .New(HttpStatusCode.OK, sale.ToViewModel()));
-        else
-            return NoContent();
     }
 
     [HttpPost("add-product")]
@@ -98,6 +76,63 @@ public class PointOfSalesController(
             .New(HttpStatusCode.OK, sale.ToViewModel()));
     }
 
+    [HttpPut("change-opened-sale-status")]
+    public async Task<IActionResult> CloseOpenedSale([FromBody] ChangeOpenedSaleStatusInputModel body)
+    {
+        Data.Entities.Sale sale = await _context.Sales
+            .Find(s => s.Status == SaleStatusEnum.Open)
+            .FirstOrDefaultAsync() ??
+            throw new BadRequestException("There's no opened sale");
+
+        if (body.Status == SaleStatusEnum.Closed)
+            sale.CloseSale();
+        if (body.Status == SaleStatusEnum.Cancelled)
+            sale.CancelSale();
+
+        await _context.Sales.ReplaceOneAsync(s => s.UID == sale.UID, sale);
+
+        if (sale.Status == SaleStatusEnum.Open)
+            return Ok(JsonResultViewModel<POSViewModel>
+                .New(HttpStatusCode.OK, sale.ToViewModel()));
+        else
+            return NoContent();
+    }
+
+    [HttpPatch("add-discount")]
+    public async Task<IActionResult> AddDiscountToSale([FromBody] AddDiscountToSaleInputModel body)
+    {
+        Data.Entities.Sale sale = await _context.Sales
+            .Find(s => s.Status == SaleStatusEnum.Open)
+            .FirstOrDefaultAsync() ??
+            throw new BadRequestException("There's no opened sale");
+
+        sale.AddDiscount(body.Value, body.Type);
+        await _context.Sales.ReplaceOneAsync(s => s.UID == sale.UID, sale);
+
+        return Ok(JsonResultViewModel<POSViewModel>
+            .New(HttpStatusCode.OK, sale.ToViewModel()));
+    }
+
+    [HttpPatch("add-client")]
+    public async Task<IActionResult> AddClientToSale([FromBody] AddClientToSaleInputModel body)
+    {
+        Data.Entities.Sale sale = await _context.Sales
+            .Find(s => s.Status == SaleStatusEnum.Open)
+            .FirstOrDefaultAsync() ??
+            throw new BadRequestException("There's no opened sale");
+
+        Data.Entities.Client client = await _context.Clients
+            .Find(p => p.UID.Equals(body.ClientID))
+            .FirstOrDefaultAsync() ??
+            throw new BadRequestException("Client not found");
+
+        sale.SetClient(client);
+        await _context.Sales.ReplaceOneAsync(s => s.UID == sale.UID, sale);
+
+        return Ok(JsonResultViewModel<POSViewModel>
+            .New(HttpStatusCode.OK, sale.ToViewModel()));
+    }
+
     [HttpDelete("delete-product/{order:int}")]
     public async Task<IActionResult> DeleteProductFromSale([FromRoute] int order)
     {
@@ -112,21 +147,6 @@ public class PointOfSalesController(
 
         productToDelete.DeleteProduct();
         sale.UpdateSubtotal();
-        await _context.Sales.ReplaceOneAsync(s => s.UID == sale.UID, sale);
-
-        return Ok(JsonResultViewModel<POSViewModel>
-            .New(HttpStatusCode.OK, sale.ToViewModel()));
-    }
-
-    [HttpPatch("add-discount")]
-    public async Task<IActionResult> AddDiscountToSale([FromBody] AddDiscountToSaleInputModel body)
-    {
-        Data.Entities.Sale sale = await _context.Sales
-                .Find(s => s.Status == SaleStatusEnum.Open)
-                .FirstOrDefaultAsync() ??
-                throw new BadRequestException("There's no opened sale");
-
-        sale.AddDiscount(body.Value, body.Type);
         await _context.Sales.ReplaceOneAsync(s => s.UID == sale.UID, sale);
 
         return Ok(JsonResultViewModel<POSViewModel>
