@@ -14,11 +14,14 @@ public class GlobalExceptionHandlingMiddleware(ILogger<GlobalExceptionHandlingMi
     {
         try
         {
+            _logger.LogInformation("{date} - Request {method} - {path}",
+                DateTime.Now, context.Request.Method, context.Request.Path);
+            
             await next(context);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, e.Message);
+            _logger.LogError(e, "{date} - {message}", DateTime.Now, e.Message);
 
             string json;
 
@@ -57,10 +60,10 @@ public class GlobalExceptionHandlingMiddleware(ILogger<GlobalExceptionHandlingMi
 
                 json = JsonSerializer.Serialize(details);
             }
+            
+            context.Response.ContentType = "application/json";
 
             await context.Response.WriteAsync(json);
-
-            context.Response.ContentType = "application/json";
         }
     }
 }

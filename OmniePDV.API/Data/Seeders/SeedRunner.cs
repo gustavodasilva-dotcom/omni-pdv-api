@@ -21,7 +21,7 @@ public sealed class SeedRunner
         });
         _logger = loggerFactory.CreateLogger<SeedRunner>();
 
-        _logger.LogInformation($"{DateTime.Now} - Starting to run seeds");
+        _logger.LogInformation("{date} - Starting to run seeds", DateTime.Now);
 
         MongoDBOptions options = _configuration.GetSection(MongoDBOptions.Position).Get<MongoDBOptions>() ??
             throw new Exception(string.Format("Section {0} not found at the environmental appsettings.json",
@@ -31,12 +31,16 @@ public sealed class SeedRunner
         IMongoDatabase database = client.GetDatabase(options.Database);
 
         await SeedDefaultClient(database);
+
+        _logger.LogInformation("{date} - All seeds ran successfully", DateTime.Now);
     }
 
     static async Task SeedDefaultClient(IMongoDatabase database)
     {
         try
         {
+            _logger.LogInformation("{date} - Running seed {seed}", DateTime.Now, nameof(SeedDefaultClient));
+
             GlobalOptions options = _configuration.GetSection(GlobalOptions.Position).Get<GlobalOptions>() ??
                 throw new Exception(string.Format("Section {0} not found at the environmental appsettings.json",
                     GlobalOptions.Position));
@@ -64,7 +68,8 @@ public sealed class SeedRunner
         }
         catch (Exception e)
         {
-            _logger.LogError($"{DateTime.Now} - Error running default client seeder - {e.Message}");
+            _logger.LogError(e, "{date} - Error running default client seeder - {message}",
+                DateTime.Now, e.Message);
         }
     }
 }

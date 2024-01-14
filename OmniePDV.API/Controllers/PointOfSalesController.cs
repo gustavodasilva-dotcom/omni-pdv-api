@@ -38,6 +38,11 @@ public class PointOfSalesController(
     [HttpPost("add-product")]
     public async Task<IActionResult> AddProductToSale([FromBody] AddProductToSaleInputModel body)
     {
+        Data.Entities.Product product = await _context.Products
+            .Find(p => p.Barcode == body.Barcode)
+            .FirstOrDefaultAsync() ??
+            throw new BadRequestException("Product not found");
+            
         Data.Entities.Sale sale = await _context.Sales
             .Find(s => s.Status == SaleStatusEnum.Open)
             .FirstOrDefaultAsync();
@@ -57,11 +62,6 @@ public class PointOfSalesController(
             );
             await _context.Sales.InsertOneAsync(sale);
         }
-
-        Data.Entities.Product product = await _context.Products
-            .Find(p => p.Barcode == body.Barcode)
-            .FirstOrDefaultAsync() ??
-            throw new BadRequestException("Product not found");
 
         Data.Entities.SaleProduct saleProduct = new(
             UID: Guid.NewGuid(),
