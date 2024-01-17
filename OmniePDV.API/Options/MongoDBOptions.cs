@@ -1,4 +1,4 @@
-﻿namespace OmniePDV.API.Options.Data;
+﻿namespace OmniePDV.API.Options;
 
 public sealed class MongoDBOptions
 {

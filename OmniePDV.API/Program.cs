@@ -1,8 +1,9 @@
 using OmniePDV.API.Data;
 using OmniePDV.API.Data.Seeders;
 using OmniePDV.API.Middlewares;
-using OmniePDV.API.Options.Data;
-using OmniePDV.API.Options.Global;
+using OmniePDV.API.Options;
+using OmniePDV.API.Services;
+using OmniePDV.API.Services.Interfaces;
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -18,10 +19,14 @@ builder.Services.AddSwaggerGen();
 builder.Services
     .Configure<MongoDBOptions>(
         builder.Configuration.GetSection(MongoDBOptions.Position))
-    .Configure<GlobalOptions>(
-        builder.Configuration.GetSection(GlobalOptions.Position));
+    .Configure<DefaultClientOptions>(
+        builder.Configuration.GetSection(DefaultClientOptions.Position))
+    .Configure<RabbitMQOptions>(
+        builder.Configuration.GetSection(RabbitMQOptions.Position));
 
 builder.Services.AddSingleton<IMongoContext, MongoContext>();
+builder.Services.AddSingleton<IMessageProducer, MessageProducer>();
+builder.Services.AddSingleton<IPointOfSalesService, PointOfSalesService>();
 
 builder.Services.AddLogging();
 

@@ -1,8 +1,7 @@
 ﻿using Humanizer;
 using MongoDB.Driver;
 using OmniePDV.API.Data.Entities;
-using OmniePDV.API.Options.Data;
-using OmniePDV.API.Options.Global;
+using OmniePDV.API.Options;
 
 namespace OmniePDV.API.Data.Seeders;
 
@@ -23,7 +22,9 @@ public sealed class SeedRunner
 
         _logger.LogInformation("{date} - Starting to run seeds", DateTime.Now);
 
-        MongoDBOptions options = _configuration.GetSection(MongoDBOptions.Position).Get<MongoDBOptions>() ??
+        MongoDBOptions options = _configuration
+            .GetSection(MongoDBOptions.Position)
+            .Get<MongoDBOptions>() ??
             throw new Exception(string.Format("Section {0} not found at the environmental appsettings.json",
                 MongoDBOptions.Position));
 
@@ -41,19 +42,21 @@ public sealed class SeedRunner
         {
             _logger.LogInformation("{date} - Running seed {seed}", DateTime.Now, nameof(SeedDefaultClient));
 
-            GlobalOptions options = _configuration.GetSection(GlobalOptions.Position).Get<GlobalOptions>() ??
+            DefaultClientOptions options = _configuration
+                .GetSection(DefaultClientOptions.Position)
+                .Get<DefaultClientOptions>() ??
                 throw new Exception(string.Format("Section {0} not found at the environmental appsettings.json",
-                    GlobalOptions.Position));
+                    DefaultClientOptions.Position));
 
             var collection = database.GetCollection<Client>(nameof(Client).Pluralize());
 
             Client client = await collection.FindSync(c => c.Name.Trim().ToLower()
-                .Equals(options.Client.Default.Name.Trim().ToLower())).FirstOrDefaultAsync();
+                .Equals(options.Name.Trim().ToLower())).FirstOrDefaultAsync();
             if (client == null)
             {
                 client = new(
-                    Name: options.Client.Default.Name,
-                    SSN: options.Client.Default.SSN,
+                    Name: options.Name,
+                    SSN: options.SSN,
                     Birthday: DateTime.Now,
                     Active: true
                 );
@@ -61,8 +64,8 @@ public sealed class SeedRunner
             }
             else
             {
-                client.SetName(options.Client.Default.Name);
-                client.SetSSN(options.Client.Default.SSN);
+                client.SetName(options.Name);
+                client.SetSSN(options.SSN);
                 await collection.ReplaceOneAsync(c => c.UID.Equals(client.UID), client);
             }
         }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using OmniePDV.API.Data.Entities;
-using OmniePDV.API.Options.Data;
+using OmniePDV.API.Options;
 
 namespace OmniePDV.API.Data;
 

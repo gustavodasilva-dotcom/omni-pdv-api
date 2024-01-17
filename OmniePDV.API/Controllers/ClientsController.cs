@@ -7,8 +7,8 @@ using OmniePDV.API.Models.ViewModels;
 using System.Net;
 using OmniePDV.API.Models.InputModels;
 using OmniePDV.API.Exceptions;
-using OmniePDV.API.Options.Global;
 using Microsoft.Extensions.Options;
+using OmniePDV.API.Options;
 
 namespace OmniePDV.API.Controllers;
 
@@ -17,10 +17,10 @@ namespace OmniePDV.API.Controllers;
 [Produces("application/json")]
 public class ClientsController(
     IMongoContext context,
-    IOptions<GlobalOptions> globalOptions) : ControllerBase
+    IOptions<DefaultClientOptions> options) : ControllerBase
 {
     private readonly IMongoContext _context = context;
-    private readonly GlobalOptions _globalOptions = globalOptions.Value;
+    private readonly DefaultClientOptions _defaultClientOptions = options.Value;
 
     [HttpGet("get-all")]
     public async Task<IActionResult> GetAllClients()
@@ -37,7 +37,7 @@ public class ClientsController(
     public async Task<IActionResult> AddClient([FromBody] ClientInputModel body)
     {
         Client defaultClient = await _context.Clients
-            .Find(c => c.Name.Equals(_globalOptions.Client.Default.Name))
+            .Find(c => c.Name.Equals(_defaultClientOptions.Name))
             .FirstOrDefaultAsync();
         if (body.Name.Trim().ToLower().Equals(defaultClient.Name.Trim().ToLower()))
             throw new ConflictException(string.Format("The name {0} is reserved", defaultClient.Name));
@@ -64,7 +64,7 @@ public class ClientsController(
     public async Task<IActionResult> UpdateClient([FromRoute] Guid id, [FromBody] ClientInputModel body)
     {
         Client defaultClient = await _context.Clients
-            .Find(c => c.Name.Equals(_globalOptions.Client.Default.Name))
+            .Find(c => c.Name.Equals(_defaultClientOptions.Name))
             .FirstOrDefaultAsync();
         if (body.Name.Trim().ToLower().Equals(defaultClient.Name.Trim().ToLower()))
             throw new ConflictException(string.Format("The name {0} is reserved", defaultClient.Name));
