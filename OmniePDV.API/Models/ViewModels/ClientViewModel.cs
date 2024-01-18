@@ -17,6 +17,9 @@ public sealed class ClientViewModel
     [JsonPropertyName("birthday")]
     public DateTime Birthday { get; set; }
 
+    [JsonPropertyName("email")]
+    public string? Email { get; set; }
+
     [JsonPropertyName("active")]
     public bool Active { get; set; }
 }
@@ -29,6 +32,7 @@ public static class ClientViewModelExtensions
         Name = model.Name,
         SSN = model.SSN,
         Birthday = model.Birthday,
+        Email = model.Email,
         Active = model.Active
     };
 

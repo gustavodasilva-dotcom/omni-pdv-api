@@ -49,6 +49,13 @@ public class PointOfSalesController(IPointOfSalesService pointOfSalesService) : 
             return NoContent();
     }
 
+    [HttpPut("send-receipt-email")]
+    public async Task<IActionResult> SendReceiptEmail([FromBody] SendSaleReceiptEmailInputModel body)
+    {
+        await _pointOfSalesService.SendReceiptThroughEmailAsync(body);
+        return Ok();
+    }
+
     [HttpPatch("add-discount")]
     public async Task<IActionResult> AddDiscountToSale([FromBody] AddDiscountToSaleInputModel body)
     {

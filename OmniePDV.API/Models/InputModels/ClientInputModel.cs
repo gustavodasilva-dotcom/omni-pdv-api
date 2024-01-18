@@ -13,6 +13,9 @@ public sealed class ClientInputModel
     [JsonPropertyName("birthday")]
     public DateTime Birthday { get; set; }
 
+    [JsonPropertyName("email")]
+    public string? Email { get; set; }
+
     [JsonPropertyName("active")]
     public bool Active { get; set; }
 }

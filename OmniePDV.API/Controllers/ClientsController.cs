@@ -49,10 +49,11 @@ public class ClientsController(
             throw new ConflictException(string.Format("There's already a client with the SSN {0}", body.SSN));
 
         client = new(
-            Name: body.Name,
-            SSN: body.SSN,
-            Birthday: body.Birthday,
-            Active: body.Active
+            name: body.Name,
+            ssn: body.SSN,
+            birthday: body.Birthday,
+            email: body.Email,
+            active: body.Active
         );
         await _context.Clients.InsertOneAsync(client);
 
@@ -77,6 +78,7 @@ public class ClientsController(
         client.SetName(body.Name);
         client.SetSSN(body.SSN);
         client.SetBirthday(body.Birthday);
+        client.SetEmail(body.Email);
         client.SetActive(body.Active);
 
         await _context.Clients.ReplaceOneAsync(c => c.UID.Equals(id), client);

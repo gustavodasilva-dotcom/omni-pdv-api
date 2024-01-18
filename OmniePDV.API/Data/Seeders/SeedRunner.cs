@@ -55,10 +55,11 @@ public sealed class SeedRunner
             if (client == null)
             {
                 client = new(
-                    Name: options.Name,
-                    SSN: options.SSN,
-                    Birthday: DateTime.Now,
-                    Active: true
+                    name: options.Name,
+                    ssn: options.SSN,
+                    birthday: DateTime.Now,
+                    email: null,
+                    active: true
                 );
                 await collection.InsertOneAsync(client);
             }

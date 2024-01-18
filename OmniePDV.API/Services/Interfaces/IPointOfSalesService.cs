@@ -8,6 +8,7 @@ public interface IPointOfSalesService
     Task<Sale> GetOpenedSaleAsync();
     Task<Sale> AddProductToSaleAsync(AddProductToSaleInputModel inputModel);
     Task<Sale> ChangeOpenedSaleStatusAsync(ChangeOpenedSaleStatusInputModel inputModel);
+    Task SendReceiptThroughEmailAsync(SendSaleReceiptEmailInputModel inputModel);
     Task<Sale> AddDiscountToSaleAsync(AddDiscountToSaleInputModel inputModel);
     Task<Sale> AddClientToSaleAsync(AddClientToSaleInputModel inputModel);
     Task<Sale> DeleteProductFromSaleAsync(int order);

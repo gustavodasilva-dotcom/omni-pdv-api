@@ -5,6 +5,7 @@ using OmniePDV.API.Data.Entities;
 using OmniePDV.API.Entities;
 using OmniePDV.API.Exceptions;
 using OmniePDV.API.Models.InputModels;
+using OmniePDV.API.Models.Requests;
 using OmniePDV.API.Options;
 using OmniePDV.API.Services.Interfaces;
 
@@ -58,7 +59,8 @@ public sealed class PointOfSalesService(
             Product: product
         );
         sale.AddProduct(saleProduct);
-        await _context.Sales.ReplaceOneAsync(s => s.UID == sale.UID, sale);
+        await _context.Sales.ReplaceOneAsync(s =>
+            s.UID == sale.UID, sale);
 
         return sale;
     }
@@ -71,14 +73,52 @@ public sealed class PointOfSalesService(
         if (inputModel.Status == SaleStatusEnum.Cancelled)
             sale.CancelSale();
         if (inputModel.Status == SaleStatusEnum.Closed)
-        {
             sale.CloseSale();
-            _messageProducer.SendMessage(sale);
-        }
 
         await _context.Sales.ReplaceOneAsync(s => s.UID == sale.UID, sale);
 
         return sale;
+    }
+
+    public async Task SendReceiptThroughEmailAsync(SendSaleReceiptEmailInputModel inputModel)
+    {
+        if (inputModel.SaleID.Equals(Guid.Empty))
+            throw new BadRequestException("Invalid sale_id");
+
+        Sale sale = await _context.Sales
+            .Find(s => s.UID.Equals(inputModel.SaleID))
+            .FirstOrDefaultAsync() ??
+            throw new BadRequestException($"There's no sale with the id {inputModel.SaleID}");
+
+        if ((sale.Client.SSN.Equals(_defaultClientOptions.SSN)
+             || string.IsNullOrEmpty(sale.Client.Email)
+            ) && string.IsNullOrEmpty(inputModel.Email))
+            throw new BadRequestException("Email cannot be null or empty");
+
+        if (!sale.Client.SSN.Equals(_defaultClientOptions.SSN)
+            && string.IsNullOrEmpty(sale.Client.Email))
+        {
+            if (string.IsNullOrEmpty(inputModel.Email))
+                throw new BadRequestException("Email cannot be null or empty");
+
+            Client client = await _context.Clients
+                .Find(c => c.UID.Equals(sale.Client.UID))
+                .FirstOrDefaultAsync();
+
+            client.SetEmail(inputModel.Email);
+            await _context.Clients.ReplaceOneAsync(c =>
+                c.UID.Equals(client.UID), client);
+
+            sale.SetClient(client);
+            await _context.Sales.ReplaceOneAsync(c =>
+                c.UID.Equals(sale.UID), sale);
+        }
+
+        SendReceiptEmailMessageRequest request = new(
+            sale: sale,
+            email: inputModel.Email
+        );
+        _messageProducer.SendMessage(request);
     }
 
     public async Task<Sale> AddDiscountToSaleAsync(AddDiscountToSaleInputModel inputModel)
@@ -87,7 +127,8 @@ public sealed class PointOfSalesService(
             throw new BadRequestException("There's no opened sale");
 
         sale.AddDiscount(inputModel.Value, inputModel.Type);
-        await _context.Sales.ReplaceOneAsync(s => s.UID == sale.UID, sale);
+        await _context.Sales.ReplaceOneAsync(s =>
+            s.UID == sale.UID, sale);
 
         return sale;
     }
@@ -105,7 +146,8 @@ public sealed class PointOfSalesService(
             throw new BadRequestException("Client not found");
 
         sale.SetClient(client);
-        await _context.Sales.ReplaceOneAsync(s => s.UID == sale.UID, sale);
+        await _context.Sales.ReplaceOneAsync(s =>
+            s.UID == sale.UID, sale);
 
         return sale;
     }
@@ -121,7 +163,8 @@ public sealed class PointOfSalesService(
 
         productToDelete.DeleteProduct();
         sale.UpdateSubtotal();
-        await _context.Sales.ReplaceOneAsync(s => s.UID == sale.UID, sale);
+        await _context.Sales.ReplaceOneAsync(s =>
+            s.UID == sale.UID, sale);
 
         return sale;
     }
