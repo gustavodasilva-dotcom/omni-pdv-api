@@ -1,3 +1,4 @@
+using Microsoft.Extensions.FileProviders;
 using OmniePDV.API.Data;
 using OmniePDV.API.Data.Seeders;
 using OmniePDV.API.Middlewares;
@@ -59,6 +60,13 @@ app.UseHttpsRedirection();
 app.UseCors(MyAllowSpecificOrigins);
 
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(app.Environment.ContentRootPath, "Content", "assets")),
+    RequestPath = "/resources"
+});
 
 app.UseAuthorization();
 

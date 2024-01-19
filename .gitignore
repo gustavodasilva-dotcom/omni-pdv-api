@@ -483,3 +483,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Custom
+*Content/assets/public
